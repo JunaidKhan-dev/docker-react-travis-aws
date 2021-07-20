@@ -1,0 +1,10 @@
+language: generic 
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t junaidkhan1/docker-react-travis -f Dockerfile.dev .
+
+script:
+  - docker run -e CI=true junaidkhan1/docker-react-travis npm run test
