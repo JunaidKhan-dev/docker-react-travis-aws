@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Template for Production React App with Docker and Docker compose using nginx,Travis and AWS
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
