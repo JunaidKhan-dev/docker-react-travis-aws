@@ -1,70 +1,123 @@
 # Template for Production React App with Docker and Docker compose using nginx,Travis and AWS
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+AWS Configuration Cheat Sheet
+updated 4-19-2021
 
-## Available Scripts
+This lecture note is not intended to be a replacement for the videos, but to serve as a cheat sheet for students who want to quickly run thru the AWS configuration steps or easily see if they missed a step. It will also help navigate through the changes to the AWS UI since the course was recorded.
 
-In the project directory, you can run:
+Initial Setup
 
-### `yarn start`
+1. Go to AWS Management Console
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+2. Search for Elastic Beanstalk in "Find Services"
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+3. Click the "Create Application" button
 
-### `yarn test`
+4. Enter "docker" for the Application Name
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+5. Scroll down to "Platform" and select "Docker" from the dropdown list.
 
-### `yarn build`
+6. Change "Platform Branch" to Docker running on 64bit Amazon Linux
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+7. Click "Create Application"
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+8. You should see a green checkmark after some time.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+9. Click the link above the checkmark for your application. This should open the application in your browser and display a Congratulations message.
 
-### `yarn eject`
+Change from Micro to Small instance type:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Note that a t2.small is outside of the free tier. t2 micro has been known to timeout and fail during the build process.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. In the left sidebar under Docker-env click "Configuration"
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+2. Find "Capacity" and click "Edit"
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+3. Scroll down to find the "Instance Type" and change from t2.micro to t2.small
 
-## Learn More
+4. Click "Apply"
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+5. The message might say "No Data" or "Severe" in Health Overview before changing to "Ok"
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Add AWS configuration details to .travis.yml file's deploy script
 
-### Code Splitting
+1. Set the region. The region code can be found by clicking the region in the toolbar next to your username.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+eg: 'us-east-1'
 
-### Analyzing the Bundle Size
+2. app should be set to the Application Name (Step #4 in the Initial Setup above)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+eg: 'docker'
 
-### Making a Progressive Web App
+3. env should be set to the lower case of your Beanstalk Environment name.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+eg: 'docker-env'
 
-### Advanced Configuration
+4. Set the bucket_name. This can be found by searching for the S3 Storage service. Click the link for the elasticbeanstalk bucket that matches your region code and copy the name.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+eg: 'elasticbeanstalk-us-east-1-923445599289'
 
-### Deployment
+5. Set the bucket_path to 'docker'
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+6. Set access_key_id to $AWS_ACCESS_KEY
 
-### `yarn build` fails to minify
+7. Set secret_access_key to $AWS_SECRET_KEY
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Create an IAM User
+
+1. Search for the "IAM Security, Identity & Compliance Service"
+
+2. Click "Create Individual IAM Users" and click "Manage Users"
+
+3. Click "Add User"
+
+4. Enter any name you’d like in the "User Name" field.
+
+eg: docker-react-travis-ci
+
+5. Tick the "Programmatic Access" checkbox
+
+6. Click "Next:Permissions"
+
+7. Click "Attach Existing Policies Directly"
+
+8. Search for "beanstalk"
+
+9. Tick the box next to "AdministratorAccess-AWSElasticBeanstalk"
+
+10. Click "Next:Tags"
+
+11. Click "Next:Review"
+
+12. Click "Create user"
+
+13. Copy and / or download the Access Key ID and Secret Access Key to use in the Travis Variable Setup.
+
+Travis Variable Setup
+
+1. Go to your Travis Dashboard and find the project repository for the application we are working on.
+
+2. On the repository page, click "More Options" and then "Settings"
+
+3. Create an AWS_ACCESS_KEY variable and paste your IAM access key from step #13 above.
+
+4. Create an AWS_SECRET_KEY variable and paste your IAM secret key from step #13 above.
+
+Deploying App
+
+1. Make a small change to your src/App.js file in the greeting text.
+
+2. In the project root, in your terminal run:
+
+git add.
+git commit -m “testing deployment"
+git push origin main
+3. Go to your Travis Dashboard and check the status of your build.
+
+4. The status should eventually return with a green checkmark and show "build passing"
+
+5. Go to your AWS Elasticbeanstalk application
+
+6. It should say "Elastic Beanstalk is updating your environment"
+
+7. It should eventually show a green checkmark under "Health". You will now be able to access your application at the external URL provided under the environment name.
