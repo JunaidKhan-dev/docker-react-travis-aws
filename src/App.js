@@ -9,6 +9,7 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to hot reload wows!.
         </p>
+        <h2>New Feature Added</h2>
         <a
           className="App-link"
           href="https://reactjs.org"
